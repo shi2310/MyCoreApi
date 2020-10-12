@@ -85,13 +85,13 @@ namespace MyCoreApi
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
-                        ValidIssuer = "Issuer",
+                        ValidIssuer = JwtParam.Issure,
 
                         ValidateAudience = true,
-                        ValidAudience = "Audience",
+                        ValidAudience = JwtParam.Audience,
 
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("{069BD1DF-72D8-474B-8950-2C3EB03B2D03}")),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtParam.SecurityKey)),
 
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.FromMinutes(30),
