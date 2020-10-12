@@ -3,7 +3,8 @@
 
 nuget包  
 Install-Package Microsoft.EntityFrameworkCore.SqlServer  
-Install-Package Microsoft.EntityFrameworkCore.InMemory
+Install-Package Microsoft.EntityFrameworkCore.InMemory  
+Install-Package Microsoft.EntityFrameworkCore.Tools
 
 数据库注册  
 appsettings.json  
