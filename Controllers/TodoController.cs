@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyCoreApi.Entity;
 using MyCoreApi.Models;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,10 +18,11 @@ namespace MyCoreApi.Controllers
     public class TodoController : ControllerBase
     {
         private readonly TodoContext _context;
+
         public TodoController(TodoContext context)
         {
-            _context = context; 
-            
+            _context = context;
+
             if (_context.TodoItems.Count() == 0)
             {
                 _context.TodoItems.Add(new TodoItem { Name = "Item1", IsComplete = false });
@@ -49,37 +54,40 @@ namespace MyCoreApi.Controllers
         /// <summary>
         /// 创建
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TodoItem item)
+        public async Task<IActionResult> Create([FromForm] TodoItemFilePost model)
         {
-            if (item == null)
+            if (ModelState.IsValid)
             {
-                return BadRequest();
-            }
-            else
-            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), string.Format("{0}{1}", Guid.NewGuid(), Path.GetExtension(model.file.FileName)));
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    await model.file.CopyToAsync(stream);
+                }
+
+                TodoItem item = new TodoItem() { Name = model.name, IsComplete = model.isComplete };
                 _context.TodoItems.Add(item);
                 await _context.SaveChangesAsync();
                 return Ok(item);
+            }
+            else
+            {
+                return BadRequest();
             }
         }
 
         /// <summary>
         /// 修改
         /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="item"></param>
+        /// <param name="id"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] TodoItem item)
+        public async Task<IActionResult> Update(int id, [FromForm] TodoItemFilePost model)
         {
-            if (item == null)
-            {
-                return BadRequest();
-            }
-            else
+            if (ModelState.IsValid)
             {
                 var todo = _context.TodoItems.SingleOrDefault(t => t.Id == id);
 
@@ -89,15 +97,27 @@ namespace MyCoreApi.Controllers
                 }
                 else
                 {
-                    todo.IsComplete = item.IsComplete;
-                    todo.Name = item.Name;
+                    if (model.file.Length > 0)
+                    {
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), string.Format("{0}{1}", Guid.NewGuid(), Path.GetExtension(model.file.FileName)));
+                        using (var stream = System.IO.File.Create(filePath))
+                        {
+                            await model.file.CopyToAsync(stream);
+                        }
+                    }
+
+                    todo.IsComplete = model.isComplete;
+                    todo.Name = model.name;
 
                     _context.TodoItems.Update(todo);
                     await _context.SaveChangesAsync();
 
                     return Ok(todo);
                 }
-
+            }
+            else
+            {
+                return BadRequest();
             }
         }
 
@@ -113,7 +133,6 @@ namespace MyCoreApi.Controllers
 
             if (todo == null)
             {
-
                 return NotFound();
             }
             else

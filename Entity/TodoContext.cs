@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MyCoreApi.Models
+namespace MyCoreApi.Entity
 {
-    public class TodoContext:DbContext
+    public class TodoContext : DbContext
     {
         public TodoContext(DbContextOptions<TodoContext> options)
                : base(options)
