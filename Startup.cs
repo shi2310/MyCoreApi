@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MyCoreApi.Entity;
+using Newtonsoft.Json;
 using System;
 using System.Text;
 
@@ -35,8 +36,19 @@ namespace MyCoreApi
             // 启用模型验证过滤器
             services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 
+            // 返回JSON
+            services.AddMvcCore().AddNewtonsoftJson(options =>
+            {
+                // 忽略循环引用
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                // 不使用驼峰
+                //options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                // 设置时间格式
+                options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+                // 如字段为null值，该字段不会返回到前端
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            });
             // 启用swagger
-            services.AddMvcCore();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Arrow", Version = "v1" });
