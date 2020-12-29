@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,10 @@ namespace MyCoreApi
             services.AddDbContext<TodoContext>(opt =>
                opt.UseSqlServer(Configuration.GetConnectionString("todoContext")));
 
-            services.AddControllers();
+            // 自定义全局模型验证过滤器
+            services.AddControllers(config=>config.Filters.Add(typeof(ModelValidateActionFilterAttribute)));
+            // 启用模型验证过滤器
+            services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
 
             // 启用swagger
             services.AddMvcCore();
